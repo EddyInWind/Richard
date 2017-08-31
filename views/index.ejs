@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+	<title>My App</title>
+	<link rel="stylesheet" type="text/css" href="bootstrap/dist/css/bootstrap.css">
+	<script type="text/javascript" src="jquery/dist/jquery.js"></script>
+	<script type="text/javascript" src="bootstrap/dist/js/bootstrap.js"></script>
+</head>
+<body>
+	<div class="container">
+		<!-- Title -->
+		<div class="row">
+			<div class="col-md-8">
+				<h1 align="center"><%= title %></h1>
+			</div>
+			<div class="col-md-4">
+				<a href="/articles"><font size="5">Articles</font></a>
+			</div>
+		</div>
+		
+		<!-- Main Year -->
+		<% for(year in quotesObj) { %>
+			<h2>
+				<%= year %>
+				<a href="#">
+					<span class="glyphicon glyphicon-plus" onclick="toggleFormAdd(<%= year %>)"></span>
+				</a>
+			</h2>
+			<a href="#">
+				<font size="5"><span class="glyphicon glyphicon-th-list" onclick="toggleSection(<%= year %>)"></span></font>
+			</a>
+			<a href="#">
+				<font size="5"><span class="glyphicon glyphicon-edit" onclick="toggleDelete(<%= year %>)"></span></font>
+			</a>
+			<div id="Y_<%- year %>">
+				<!-- Toggle form -->
+				<form id="formAdd_<%= year %>" action="/addQuote" method="post" style="display:none">
+					<input type="hidden" name="quoteYear"><br>
+					quote:<input type="text" name="newQuote">
+					<input type="submit" value="OK">
+				</form>
+
+				<!-- Quote -->
+				<% for(var i = 0; i < quotesObj[year].length; i++) { %>
+					<div class="row quoteItem" id="quote_<%- quotesObj[year][i]['id'] %>">
+						<button name="deleteBt" onclick="deleteQuote(<%- quotesObj[year][i]['id'] %>, <%- year %>)" style="display:none">Del</button>
+						<font size="5"><li ><%= quotesObj[year][i]['quote'] %></li></font>
+					</div>
+				<% } %>
+			</div>
+		<% } %>
+		
+		<!-- Add Form-->
+		<br>
+		<form action="/addQuote" method="post">
+			Year: <input type="text" name="quoteYear"><br>
+			Quote:<input type="text" name="newQuote">
+			<input type="submit" value="OK">
+		</form>
+	</div>
+
+	<script type="text/javascript">
+		$(document).ready(function() // or $(function()
+		{
+
+		});
+
+
+		function deleteQuote(id, year) {
+			var data = {
+				id: id
+			};
+			$.ajax({
+				type: 'POST',
+				data: data,
+				url: '/deleteQuote',
+				success: function(id){
+					$('#quote_' + id).remove();
+					if ($('#Y_' + year + ' .quoteItem').length == 0) 
+						$('#Y_' + year).remove();
+				},
+				error: function(err) {
+					alert(err.toString());
+				}
+			})
+		}
+
+		function toggleFormAdd(year) {
+			$('#formAdd_' + year).toggle();
+			$('#formAdd_' + year + ' input[name="quoteYear"]').val(year);
+			$('#formAdd_' + year + ' input[name="newQuote"]').focus();
+		}
+
+		function toggleSection(year) {
+			$('#Y_' + year).toggle();
+		}
+
+		function toggleDelete(year) {
+			$('#Y_' + year + ' .quoteItem button[name="deleteBt"]').toggle();
+		}
+	</script>
+</body>
+</html>
